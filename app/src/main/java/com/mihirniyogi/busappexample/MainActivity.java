@@ -1,14 +1,49 @@
 package com.mihirniyogi.busappexample;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.location.CurrentLocationRequest;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.OnFailureListener;
+
+import java.util.Locale;
+
+import kotlinx.coroutines.scheduling.Task;
+
 public class MainActivity extends AppCompatActivity {
+    private final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private FusedLocationProviderClient fusedLocationClient;
+    private double latitude;
+    private double longitude;
+    private TextView locationTextView;
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            result -> {
+                if (result) {
+                    Log.d("Permission", "ACCESS_FINE_LOCATION permission granted");
+                    getCurrentLocation();
+                }
+                else Log.d("Permission", "ACCESS_FINE_LOCATION permission denied");
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,5 +55,56 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // initialise
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        locationTextView = findViewById(R.id.locationTextView);
+
+        getCurrentLocation(); // get location and set text
+    }
+
+    private boolean hasLocationPermission() {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestLocationPermission() {
+        if (hasLocationPermission()) return;
+        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
+    @SuppressLint("MissingPermission")
+    private void getCurrentLocation() {
+        if (!hasLocationPermission()) {
+            requestLocationPermission();
+            return;
+        }
+
+        CurrentLocationRequest request = new CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .build();
+        fusedLocationClient
+                .getCurrentLocation(request, null)
+                .addOnSuccessListener(
+                        this,
+                        location -> {
+                            if (location == null) {
+                                Log.d("Location", "Location is null");
+                                return;
+                            }
+                            latitude = location.getLatitude();
+                            longitude = location.getLongitude();
+                            Log.d("Location", "Lat: " + latitude + ", Lng: " + longitude);
+                            setLocationTextView();
+                        })
+                .addOnFailureListener(
+                        this,
+                        e -> {
+                            Log.e("LocationError", "Error getting current location", e);
+                        });
+    }
+
+    private void setLocationTextView() {
+        String toShow = String.format(Locale.US, "Lat: %.6f, Lng: %.6f", latitude, longitude);
+        locationTextView.setText(toShow);
     }
 }

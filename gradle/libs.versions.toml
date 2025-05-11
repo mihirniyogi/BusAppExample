@@ -1,5 +1,7 @@
 [versions]
 agp = "8.10.0"
+firebaseAppdistribution = "16.0.0-beta15"
+firebaseBom = "33.13.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -11,6 +13,9 @@ playServicesLocation = "21.3.0"
 
 [libraries]
 activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
+firebase-appdistribution = { module = "com.google.firebase:firebase-appdistribution", version.ref = "firebaseAppdistribution" }
+firebase-appdistribution-api = { module = "com.google.firebase:firebase-appdistribution-api", version.ref = "firebaseAppdistribution" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

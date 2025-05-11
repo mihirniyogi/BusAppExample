@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -21,6 +22,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+
+        beta {
+            initWith release
+            matchingFallbacks = ['release']
+            debuggable true
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -35,7 +42,13 @@ dependencies {
     implementation libs.constraintlayout
     implementation libs.play.services.location
     implementation libs.activity.ktx
+
+    implementation platform(libs.firebase.bom)
+    implementation(libs.firebase.appdistribution.api)
+    betaImplementation(libs.firebase.appdistribution)
+
     testImplementation libs.junit
+
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 }

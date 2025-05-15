@@ -23,6 +23,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 
+        alpha {
+            initWith release
+            matchingFallbacks = ['release']
+            debuggable true
+        }
+
         beta {
             initWith release
             matchingFallbacks = ['release']

@@ -20,6 +20,8 @@ import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
+import com.google.firebase.appdistribution.FirebaseAppDistribution;
+import com.google.firebase.appdistribution.InterruptionLevel;
 
 import java.util.Locale;
 
@@ -39,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
             }
     );
 
+    FirebaseAppDistribution distribution = FirebaseAppDistribution.getInstance();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +58,11 @@ public class MainActivity extends AppCompatActivity {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         locationTextView = findViewById(R.id.locationTextView);
 
-        getCurrentLocation(); // get location and set text
+        // get location and set text
+        getCurrentLocation();
+
+        // show feedback notification
+        distribution.showFeedbackNotification(R.string.additionalFormText, InterruptionLevel.HIGH);
     }
 
     private boolean hasLocationPermission() {

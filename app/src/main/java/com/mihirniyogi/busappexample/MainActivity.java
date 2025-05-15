@@ -68,10 +68,13 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("MissingPermission")
     private void getCurrentLocation() {
+
         if (!hasLocationPermission()) {
             requestLocationPermission();
             return;
         }
+
+        locationTextView.setText("Getting location...");
 
         CurrentLocationRequest request = new CurrentLocationRequest.Builder()
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)

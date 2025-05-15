@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -10,8 +11,8 @@ android {
         applicationId "com.mihirniyogi.busappexample"
         minSdk 24
         targetSdk 35
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.0.1-beta"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -20,6 +21,18 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        alpha {
+            initWith release
+            matchingFallbacks = ['release']
+            debuggable true
+        }
+
+        beta {
+            initWith release
+            matchingFallbacks = ['release']
+            debuggable true
         }
     }
     compileOptions {
@@ -35,7 +48,13 @@ dependencies {
     implementation libs.constraintlayout
     implementation libs.play.services.location
     implementation libs.activity.ktx
+
+    implementation platform(libs.firebase.bom)
+    implementation(libs.firebase.appdistribution.api)
+    betaImplementation(libs.firebase.appdistribution)
+
     testImplementation libs.junit
+
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 }

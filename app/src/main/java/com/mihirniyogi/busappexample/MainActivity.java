@@ -3,7 +3,6 @@ package com.mihirniyogi.busappexample;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -11,7 +10,6 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
@@ -22,14 +20,12 @@ import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
-import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.appdistribution.FirebaseAppDistribution;
+import com.google.firebase.appdistribution.InterruptionLevel;
 
 import java.util.Locale;
 
-import kotlinx.coroutines.scheduling.Task;
-
 public class MainActivity extends AppCompatActivity {
-    private final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private FusedLocationProviderClient fusedLocationClient;
     private double latitude;
     private double longitude;
@@ -44,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
                 else Log.d("Permission", "ACCESS_FINE_LOCATION permission denied");
             }
     );
+
+    FirebaseAppDistribution distribution = FirebaseAppDistribution.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +58,11 @@ public class MainActivity extends AppCompatActivity {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         locationTextView = findViewById(R.id.locationTextView);
 
-        getCurrentLocation(); // get location and set text
+        // get location and set text
+        getCurrentLocation();
+
+        // show feedback notification
+        distribution.showFeedbackNotification(R.string.additionalFormText, InterruptionLevel.HIGH);
     }
 
     private boolean hasLocationPermission() {
@@ -74,10 +76,13 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("MissingPermission")
     private void getCurrentLocation() {
+
         if (!hasLocationPermission()) {
             requestLocationPermission();
             return;
         }
+
+        locationTextView.setText("Getting location...");
 
         CurrentLocationRequest request = new CurrentLocationRequest.Builder()
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
@@ -98,9 +103,7 @@ public class MainActivity extends AppCompatActivity {
                         })
                 .addOnFailureListener(
                         this,
-                        e -> {
-                            Log.e("LocationError", "Error getting current location", e);
-                        });
+                        e -> Log.e("LocationError", "Error getting current location", e));
     }
 
     private void setLocationTextView() {

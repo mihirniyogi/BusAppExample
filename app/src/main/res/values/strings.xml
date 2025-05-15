@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">BusAppExample</string>
+    <string name="additionalFormText">Please leave your feedback here.</string>
 </resources>

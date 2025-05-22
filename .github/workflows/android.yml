@@ -27,6 +27,8 @@ jobs:
           echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
           echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
           echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+          echo "FIREBASE_APP_ID=${{  secrets.FIREBASE_APP_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_TESTERS=${{  secrets.FIREBASE_TESTERS }}" >> $GITHUB_ENV
 
       # setup jdk
       - name: Setup JDK 17
@@ -39,9 +41,10 @@ jobs:
       - name: Build Signed APK
         run: ./gradlew clean assembleRelease
 
-      # upload APK
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release.apk
-          path: app/build/outputs/apk/release/app-release.apk
+      # decode firebase creds file from base64 secret
+      - name: Decode Firebase Credentials
+        run: echo "${{ secrets.FIREBASE_CREDENTIALS_BASE64 }}" | base64 -d > service-account.json
+
+      # upload to firebase app distr. via fastlane
+      - name: Fastlane
+        run: fastlane beta

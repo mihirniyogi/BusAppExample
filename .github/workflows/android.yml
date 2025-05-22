@@ -41,6 +41,16 @@ jobs:
       - name: Build Signed APK
         run: ./gradlew clean assembleRelease
 
+      # setup ruby
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+
+      # install ruby dependencies
+      - name: Install Ruby Dependencies
+        run: bundle install --path vendor/bundle
+
       # decode firebase creds file from base64 secret
       - name: Decode Firebase Credentials
         run: echo "${{ secrets.FIREBASE_CREDENTIALS_BASE64 }}" | base64 -d > service-account.json

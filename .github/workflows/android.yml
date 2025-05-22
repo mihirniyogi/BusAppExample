@@ -1,5 +1,8 @@
 name: Android
 
+env:
+  BUILD_VARIANT: assembleBeta
+
 on:
   push:
     branches:
@@ -39,7 +42,11 @@ jobs:
 
       # build signed apk
       - name: Build Signed APK
-        run: ./gradlew clean assembleRelease
+        run: ./gradlew clean $BUILD_VARIANT
+
+      # decode firebase creds file from base64 secret
+      - name: Decode Firebase Credentials
+        run: echo "${{ secrets.FIREBASE_CREDENTIALS_BASE64 }}" | base64 -d > service-account.json
 
       # setup ruby
       - name: Setup Ruby
@@ -49,11 +56,7 @@ jobs:
 
       # install ruby dependencies
       - name: Install Ruby Dependencies
-        run: bundle install --path vendor/bundle
-
-      # decode firebase creds file from base64 secret
-      - name: Decode Firebase Credentials
-        run: echo "${{ secrets.FIREBASE_CREDENTIALS_BASE64 }}" | base64 -d > service-account.json
+        run: bundle install
 
       # upload to firebase app distr. via fastlane
       - name: Fastlane

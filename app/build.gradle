@@ -55,6 +55,7 @@ dependencies {
 
     implementation platform(libs.firebase.bom)
     implementation(libs.firebase.appdistribution.api)
+    betaImplementation(libs.firebase.appdistribution)
 
     testImplementation libs.junit
 

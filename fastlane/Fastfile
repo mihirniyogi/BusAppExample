@@ -16,14 +16,14 @@
 default_platform(:android)
 
 platform :android do
-  desc "Submit a new Beta Build to Firebase App Distribution"
+  desc "Upload to Firebase App Distribution"
   lane :beta do
     firebase_app_distribution(
         service_credentials_file: "service-account.json",
         app: ENV["FIREBASE_APP_ID"],
-        apk_path: "app/build/outputs/apk/release/app-release.apk",
+        apk_path: "app/build/outputs/apk/release/app-beta.apk",
         testers: "mihirniyogi942@gmail.com",
-        release_notes: "CI/CD Build via Fastlane"
+        release_notes: "Slightly faster location retrieval!"
     )
   end
 end

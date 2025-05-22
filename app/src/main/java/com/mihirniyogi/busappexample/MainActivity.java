@@ -3,6 +3,7 @@ package com.mihirniyogi.busappexample;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -12,9 +13,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -23,64 +21,88 @@ import com.google.android.gms.location.Priority;
 import com.google.firebase.appdistribution.FirebaseAppDistribution;
 import com.google.firebase.appdistribution.InterruptionLevel;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-    private FusedLocationProviderClient fusedLocationClient;
+    private static final String LOCATION_PERM_STRING = Manifest.permission.ACCESS_FINE_LOCATION;
+    private static final String NOTIF_PERM_STRING = Manifest.permission.POST_NOTIFICATIONS;
     private double latitude;
     private double longitude;
+    private FusedLocationProviderClient fusedLocationClient;
     private TextView locationTextView;
-    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
-            new ActivityResultContracts.RequestPermission(),
+    private FirebaseAppDistribution distribution;
+    private final ActivityResultLauncher<String[]> permissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(),
             result -> {
-                if (result) {
-                    Log.d("Permission", "ACCESS_FINE_LOCATION permission granted");
+                Boolean locationGranted = result.getOrDefault(LOCATION_PERM_STRING, false);
+                Boolean notificationGranted = result.getOrDefault(NOTIF_PERM_STRING, false);
+
+                if (locationGranted != null && locationGranted) {
+                    Log.d("Permission", "Location granted");
                     getCurrentLocation();
+                } else {
+                    Log.d("Permission", "Location denied");
                 }
-                else Log.d("Permission", "ACCESS_FINE_LOCATION permission denied");
+
+                if (notificationGranted != null && notificationGranted) {
+                    Log.d("Permission", "Notification granted");
+                    distribution.showFeedbackNotification(R.string.additionalFormText, InterruptionLevel.HIGH);
+                } else {
+                    Log.d("Permission", "Notification denied");
+                }
             }
     );
-
-    FirebaseAppDistribution distribution = FirebaseAppDistribution.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
         // initialise
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         locationTextView = findViewById(R.id.locationTextView);
+        distribution = FirebaseAppDistribution.getInstance();
+
+        /* -------- permissions -------- */
+        ArrayList<String> permissionsToRequest = new ArrayList<>();
+
+        // add location perm
+        if (!isPermissionGranted(LOCATION_PERM_STRING)) {
+            permissionsToRequest.add(LOCATION_PERM_STRING);
+        }
+
+        // add notif perm
+        if (BuildConfig.BUILD_TYPE.equals("beta") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !isPermissionGranted(NOTIF_PERM_STRING)) {
+            permissionsToRequest.add(NOTIF_PERM_STRING);
+        }
+
+        // request added permissions
+        if (!permissionsToRequest.isEmpty()) {
+            permissionLauncher.launch(permissionsToRequest.toArray(new String[0]));
+        }
+        /* -------- end of permissions -------- */
 
         // get location and set text
-        getCurrentLocation();
+        if (isPermissionGranted(LOCATION_PERM_STRING)) {
+            getCurrentLocation();
+        }
 
         // show feedback notification
-        distribution.showFeedbackNotification(R.string.additionalFormText, InterruptionLevel.HIGH);
+        if (BuildConfig.BUILD_TYPE.equals("beta") && isPermissionGranted(NOTIF_PERM_STRING)) {
+            distribution.showFeedbackNotification(R.string.additionalFormText, InterruptionLevel.HIGH);
+        }
     }
 
-    private boolean hasLocationPermission() {
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestLocationPermission() {
-        if (hasLocationPermission()) return;
-        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+    private boolean isPermissionGranted(String permission) {
+        return ActivityCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
     @SuppressLint("MissingPermission")
     private void getCurrentLocation() {
 
-        if (!hasLocationPermission()) {
-            requestLocationPermission();
-            return;
-        }
+        if (!isPermissionGranted(LOCATION_PERM_STRING)) return;
 
         locationTextView.setText("Getting location...");
 

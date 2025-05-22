@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "636956014481",
+    "project_id": "busappexample",
+    "storage_bucket": "busappexample.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:636956014481:android:ed0908e8d54fced1be8c30",
+        "android_client_info": {
+          "package_name": "com.mihirniyogi.busappexample"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdk9K5cfKV-eYh2Ye8MAqD3WYs3njL4nA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
